@@ -87,7 +87,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{background: '#0A0E14'}}>
+    <div className="relative min-h-screen overflow-hidden" style={{ background: '#0A0E14' }}>
       {/* Animated Canvas Background */}
       <canvas ref={canvasRef} className="fixed inset-0 z-0" />
 
@@ -132,11 +132,11 @@ export default function Home() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-6 mb-16">
-              <Link href="/app">
+              <Link href="https://docs-olive-kappa.vercel.app/docs/intro" target='_blank'>
                 <button className="glass-button group">
                   <span className="relative z-10 flex items-center gap-2">
                     <span className="orbit-icon"></span>
-                    Create Campaign
+                    Read The Docs
                   </span>
                   <div className="button-glow" />
                 </button>
