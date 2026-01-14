@@ -16,7 +16,7 @@ import { CreateCampaignForm } from '@/components/campaign';
 const TABS: Tab[] = [
   { id: 'explore', label: 'Explore Campaign' },
   { id: 'pass', label: 'Pass Campaign' },
-  { id: 'create', label: 'Create Campaign' },
+  { id: 'create', label: 'Create Campaign' }
 ];
 
 export default function AppPage() {
