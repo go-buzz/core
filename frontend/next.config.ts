@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
     'thread-stream',
     'lokijs',
     'encoding',
+    'pg',
+    '@prisma/adapter-pg',
   ],
 
   // Add empty turbopack config to silence warning
