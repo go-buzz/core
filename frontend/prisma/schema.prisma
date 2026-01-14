@@ -12,22 +12,22 @@ datasource db {
 
 // User model - stores user information and their wallet address
 model User {
-  id                String   @id @default(cuid())
-  address           String   @unique // Wallet address
-  twitterId         String?  @unique // Twitter user ID
-  twitterUsername   String?  // Twitter username
-  twitterHandle     String?  // Twitter handle (e.g., @username)
-  isTwitterAuthorized Boolean @default(false) // Whether user has authorized Twitter
-  twitterAccessToken String? // Twitter OAuth access token
+  id                  String   @id @default(cuid())
+  address             String   @unique // Wallet address
+  twitterId           String?  @unique // Twitter user ID
+  twitterUsername     String? // Twitter username
+  twitterHandle       String? // Twitter handle (e.g., @username)
+  isTwitterAuthorized Boolean  @default(false) // Whether user has authorized Twitter
+  twitterAccessToken  String? // Twitter OAuth access token
   twitterRefreshToken String? // Twitter OAuth refresh token
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   // Relations
-  createdCampaigns  Campaign[] @relation("CampaignCreator")
-  participations    CampaignParticipant[]
-  claims            RewardClaim[]
-  taskCompletions   TaskCompletion[]
+  createdCampaigns Campaign[]            @relation("CampaignCreator")
+  participations   CampaignParticipant[]
+  claims           RewardClaim[]
+  taskCompletions  TaskCompletion[]
 
   @@index([address])
   @@index([twitterId])
@@ -35,29 +35,29 @@ model User {
 
 // Campaign model - stores campaign details
 model Campaign {
-  id                String   @id @default(cuid())
-  campaignId        String   @unique // Campaign ID from smart contract
+  id                String    @id @default(cuid())
+  campaignId        String    @unique // Campaign ID from smart contract
   name              String
-  description       String?  @db.Text // Campaign description (not sent to smart contract)
-  contractAddress   String   // Smart contract address
-  rewardAmount      String   // Reward amount in wei
-  totalParticipants Int      @default(0)
-  maxParticipants   Int?     // Max participants (optional)
+  description       String?   @db.Text // Campaign description (not sent to smart contract)
+  contractAddress   String // Smart contract address
+  rewardAmount      String // Reward amount in wei
+  totalParticipants Int       @default(0)
+  maxParticipants   Int? // Max participants (optional)
   startDate         DateTime?
   endDate           DateTime?
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   // Creator relation
-  creatorId         String
-  creator           User     @relation("CampaignCreator", fields: [creatorId], references: [id])
+  creatorId String
+  creator   User   @relation("CampaignCreator", fields: [creatorId], references: [id])
 
   // Relations
-  rules             CampaignRule[]
-  participants      CampaignParticipant[]
-  claims            RewardClaim[]
-  taskCompletions   TaskCompletion[]
+  rules           CampaignRule[]
+  participants    CampaignParticipant[]
+  claims          RewardClaim[]
+  taskCompletions TaskCompletion[]
 
   @@index([campaignId])
   @@index([creatorId])
@@ -66,37 +66,37 @@ model Campaign {
 
 // CampaignRule model - stores validation rules for campaigns
 model CampaignRule {
-  id          String   @id @default(cuid())
-  campaignId  String
-  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
-  ruleType    String   // e.g., "FOLLOW_TWITTER", "RETWEET", "LIKE", "COMMENT", "MIN_FOLLOWERS"
-  ruleValue   String?  // e.g., Twitter handle to follow, tweet URL, minimum follower count
-  description String   // Human-readable description of the rule
-  isRequired  Boolean  @default(true)
-  order       Int      @default(0) // Display order
+  ruleType    String // e.g., "FOLLOW_TWITTER", "RETWEET", "LIKE", "COMMENT", "MIN_FOLLOWERS"
+  ruleValue   String? // e.g., Twitter handle to follow, tweet URL, minimum follower count
+  description String // Human-readable description of the rule
+  isRequired  Boolean @default(true)
+  order       Int     @default(0) // Display order
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([campaignId])
 }
 
 // CampaignParticipant model - tracks user participation in campaigns
 model CampaignParticipant {
-  id                String   @id @default(cuid())
-  campaignId        String
-  campaign          Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  userId            String
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  hasJoined         Boolean  @default(false)
+  hasJoined         Boolean   @default(false)
   joinedAt          DateTime?
-  validationStatus  String   @default("PENDING") // PENDING, VALIDATED, FAILED
-  validationMessage String?  @db.Text // Validation result message
+  validationStatus  String    @default("PENDING") // PENDING, VALIDATED, FAILED
+  validationMessage String?   @db.Text // Validation result message
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Ensure one participation per user per campaign
   @@unique([campaignId, userId])
@@ -107,20 +107,20 @@ model CampaignParticipant {
 
 // RewardClaim model - tracks reward claims
 model RewardClaim {
-  id              String   @id @default(cuid())
-  campaignId      String
-  campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  rewardAmount    String   // Amount claimed in wei
-  transactionHash String?  // Blockchain transaction hash
+  rewardAmount    String // Amount claimed in wei
+  transactionHash String? // Blockchain transaction hash
   claimStatus     String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
   claimError      String?  @db.Text
   claimedAt       DateTime @default(now())
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Ensure one claim per user per campaign
   @@unique([campaignId, userId])
@@ -132,21 +132,21 @@ model RewardClaim {
 
 // TaskCompletion model - tracks completed tasks by users
 model TaskCompletion {
-  id                String   @id @default(cuid())
-  campaignId        String
-  campaign          Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  userId            String
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ruleId            String
-  
-  ruleType          String   // COMMENT, RETWEET, LIKE, FOLLOW_TWITTER, etc.
-  verificationData  String?  @db.Text // JSON string with proof validation only (tweetId, verified, timestamp) - NO personal data
-  isVerified        Boolean  @default(false)
-  verificationError String?  @db.Text // Error message if verification failed
-  
-  completedAt       DateTime @default(now())
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ruleId     String
+
+  ruleType          String // COMMENT, RETWEET, LIKE, FOLLOW_TWITTER, etc.
+  verificationData  String? @db.Text // JSON string with proof validation only (tweetId, verified, timestamp) - NO personal data
+  isVerified        Boolean @default(false)
+  verificationError String? @db.Text // Error message if verification failed
+
+  completedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Ensure one completion per user per rule per campaign
   @@unique([campaignId, userId, ruleId])
@@ -155,4 +155,3 @@ model TaskCompletion {
   @@index([ruleId])
   @@index([isVerified])
 }
-

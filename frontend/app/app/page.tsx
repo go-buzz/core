@@ -69,7 +69,7 @@ export default function AppPage() {
                     </h2>
                     <p className="text-[#B8C2CC] text-sm font-mono">
                       {activeTab === 'explore'
-                        ? 'Browse active campaigns from Base Sepolia blockchain'
+                        ? 'Browse active campaigns from Mantle Sepolia blockchain'
                         : 'View expired campaigns'}
                     </p>
                   </div>

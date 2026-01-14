@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchChain, usePublicClient } from 'wagmi';
 import { parseUnits, Address, decodeEventLog } from 'viem';
-import { baseSepolia } from 'wagmi/chains';
+import { mantleSepoliaTestnet } from 'wagmi/chains';
 import { goBuzzFactoryAbi } from '@/abis/goBuzzFactoryAbi';
 import { tokenAbi } from '@/abis/tokensAbi';
 import Button from '@/components/ui/Button';
@@ -72,12 +72,12 @@ export default function CreateCampaignForm() {
             return;
         }
 
-        if (chain?.id !== baseSepolia.id) {
+        if (chain?.id !== mantleSepoliaTestnet.id) {
             try {
-                await switchChain({ chainId: baseSepolia.id });
+                await switchChain({ chainId: mantleSepoliaTestnet.id });
             } catch (error) {
                 console.error('Error switching chain:', error);
-                alert('Please switch to Base Sepolia network');
+                alert('Please switch to Mantle Sepolia network');
                 return;
             }
         }
@@ -91,7 +91,7 @@ export default function CreateCampaignForm() {
                 abi: tokenAbi,
                 functionName: 'approve',
                 args: [FACTORY_ADDRESS, amount],
-                chainId: baseSepolia.id,
+                chainId: mantleSepoliaTestnet.id,
             });
         } catch (error) {
             console.error('Error approving:', error);
@@ -106,12 +106,12 @@ export default function CreateCampaignForm() {
             return;
         }
 
-        if (chain?.id !== baseSepolia.id) {
+        if (chain?.id !== mantleSepoliaTestnet.id) {
             try {
-                await switchChain({ chainId: baseSepolia.id });
+                await switchChain({ chainId: mantleSepoliaTestnet.id });
             } catch (error) {
                 console.error('Error switching chain:', error);
-                alert('Please switch to Base Sepolia network');
+                alert('Please switch to Mantle Sepolia network');
                 return;
             }
         }
@@ -132,7 +132,8 @@ export default function CreateCampaignForm() {
                     rewardPerClaim,
                     TOKEN_ADDRESS,
                 ],
-                chainId: baseSepolia.id,
+                chainId: mantleSepoliaTestnet.id,
+                // gas: BigInt(3000000), // 3M gas - deploying new contract + token transfer requires more gas
             });
         } catch (error) {
             console.error('Error creating campaign:', error);
@@ -159,42 +160,54 @@ export default function CreateCampaignForm() {
                         hash: createHash
                     });
 
-                    // Find CampaignCreated event in logs
-                    const campaignCreatedLog = receipt.logs.find(log => {
-                        try {
-                            const decoded = decodeEventLog({
-                                abi: goBuzzFactoryAbi,
-                                data: log.data,
-                                topics: log.topics,
-                            });
-                            return decoded.eventName === 'CampaignCreated';
-                        } catch {
-                            return false;
-                        }
-                    });
+                    console.log('📋 Transaction receipt logs:', receipt.logs);
+                    console.log('📋 Number of logs:', receipt.logs.length);
 
-                    if (!campaignCreatedLog) {
+                    // Find CampaignCreated event in logs
+                    // The event signature for CampaignCreated(address indexed, address indexed, string, uint256, uint256, uint256)
+                    let campaignAddress: Address | null = null;
+
+                    for (const log of receipt.logs) {
+                        console.log('🔍 Checking log from:', log.address);
+                        console.log('🔍 Log topics:', log.topics);
+
+                        // Check if log is from Factory contract
+                        if (log.address.toLowerCase() === FACTORY_ADDRESS.toLowerCase()) {
+                            try {
+                                const decoded = decodeEventLog({
+                                    abi: goBuzzFactoryAbi,
+                                    data: log.data,
+                                    topics: log.topics,
+                                });
+                                console.log('✅ Decoded event:', decoded);
+
+                                if (decoded.eventName === 'CampaignCreated') {
+                                    campaignAddress = decoded.args.campaignAddress as Address;
+                                    console.log('✅ Found campaign address from event:', campaignAddress);
+                                    break;
+                                }
+                            } catch (e) {
+                                console.log('⚠️ Could not decode log:', e);
+                                // Fallback: CampaignCreated event has campaignAddress as first indexed param (topics[1])
+                                // Topic format: 0x + 24 zeros + 40 hex chars (address)
+                                if (log.topics.length >= 2 && log.topics[1]) {
+                                    const addressFromTopic = '0x' + log.topics[1].slice(26);
+                                    console.log('🔄 Trying fallback address from topic:', addressFromTopic);
+                                    campaignAddress = addressFromTopic as Address;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!campaignAddress) {
                         console.error('❌ CampaignCreated event not found in transaction receipt');
+                        console.log('📋 All logs:', JSON.stringify(receipt.logs, null, 2));
                         alert('Failed to extract campaign address from transaction. Please check transaction on block explorer.');
                         setStep('form');
                         return;
                     }
 
-                    // Decode the event to get campaignAddress
-                    const decoded = decodeEventLog({
-                        abi: goBuzzFactoryAbi,
-                        data: campaignCreatedLog.data,
-                        topics: campaignCreatedLog.topics,
-                    });
-
-                    // Type guard to ensure it's CampaignCreated event
-                    if (decoded.eventName !== 'CampaignCreated') {
-                        console.error('❌ Unexpected event:', decoded.eventName);
-                        setStep('form');
-                        return;
-                    }
-
-                    const campaignAddress = decoded.args.campaignAddress as Address;
                     console.log('✅ Campaign contract address:', campaignAddress);
 
                     // Get campaign count from factory contract to determine campaign ID (index)
@@ -288,7 +301,7 @@ export default function CreateCampaignForm() {
                     <div className="mb-6">
                         <p className="text-sm text-[#B8C2CC] mb-2">Transaction Hash:</p>
                         <a
-                            href={`https://sepolia.basescan.org/tx/${createHash}`}
+                            href={`https://sepolia.mantlescan.xyz/tx/${createHash}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-sm text-[#3AE8FF] hover:text-[#7CD2FF] underline break-all"
@@ -307,12 +320,12 @@ export default function CreateCampaignForm() {
             <div className="mb-8">
                 <h2 className="text-2xl font-bold text-white mb-2">Create New Campaign</h2>
                 <p className="text-[#B8C2CC] text-sm font-mono">
-                    Fill in the details below to launch your campaign on Base Sepolia
+                    Fill in the details below to launch your campaign on Mantle
                 </p>
             </div>
 
             {/* Network Warning */}
-            {chain && chain.id !== baseSepolia.id && (
+            {chain && chain.id !== mantleSepoliaTestnet.id && (
                 <div className="mb-6 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
                     <div className="flex items-center gap-3">
                         <svg className="w-5 h-5 text-yellow-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
@@ -320,9 +333,9 @@ export default function CreateCampaignForm() {
                         </svg>
                         <div className="flex-1">
                             <p className="text-yellow-200 text-sm">
-                                You are connected to <span className="font-medium">{chain.name}</span>. Campaigns can only be created on <span className="font-medium">Base Sepolia</span>.
+                                You are connected to <span className="font-medium">{chain.name}</span>. Campaigns can only be created on <span className="font-medium">Mantle Sepolia</span>.
                                 <button
-                                    onClick={() => switchChain({ chainId: baseSepolia.id })}
+                                    onClick={() => switchChain({ chainId: mantleSepoliaTestnet.id })}
                                     className="ml-2 underline font-medium hover:text-yellow-100"
                                 >
                                     Switch Network
@@ -334,14 +347,14 @@ export default function CreateCampaignForm() {
             )}
 
             {/* Network Info */}
-            {chain && chain.id === baseSepolia.id && (
+            {chain && chain.id === mantleSepoliaTestnet.id && (
                 <div className="mb-6 bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                     <div className="flex items-center gap-3">
                         <svg className="w-5 h-5 text-green-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
                         <p className="text-green-200 text-sm">
-                            Connected to <span className="font-medium">Base Sepolia</span>
+                            Connected to <span className="font-medium">Mantle Sepolia</span>
                         </p>
                     </div>
                 </div>
@@ -528,7 +541,7 @@ export default function CreateCampaignForm() {
                             <div>
                                 <p className="text-sm text-[#B8C2CC] mb-1">Approve TX:</p>
                                 <a
-                                    href={`https://sepolia.basescan.org/tx/${approveHash}`}
+                                    href={`https://sepolia.mantlescan.xyz/tx/${approveHash}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-xs text-[#3AE8FF] hover:text-[#7CD2FF] underline break-all font-mono"
@@ -541,7 +554,7 @@ export default function CreateCampaignForm() {
                             <div>
                                 <p className="text-sm text-[#B8C2CC] mb-1">Create TX:</p>
                                 <a
-                                    href={`https://sepolia.basescan.org/tx/${createHash}`}
+                                    href={`https://sepolia.mantlescan.xyz/tx/${createHash}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-xs text-[#3AE8FF] hover:text-[#7CD2FF] underline break-all font-mono"

@@ -2,7 +2,7 @@
 
 import { useReadContract } from 'wagmi';
 import { Address } from 'viem';
-import { baseSepolia } from 'wagmi/chains';
+import { mantleSepoliaTestnet } from 'wagmi/chains';
 import { goBuzzFactoryAbi } from '@/abis/goBuzzFactoryAbi';
 
 const FACTORY_ADDRESS = process.env.NEXT_PUBLIC_FACTORY_ADDRESS as Address;
@@ -16,7 +16,7 @@ export function useCampaignAddress(campaignId?: number) {
         abi: goBuzzFactoryAbi,
         functionName: 'campaigns',
         args: campaignId !== undefined ? [BigInt(campaignId)] : undefined,
-        chainId: baseSepolia.id,
+        chainId: mantleSepoliaTestnet.id,
     });
 
     return {

@@ -2,7 +2,7 @@
 
 import { useReadContract } from 'wagmi';
 import { Address } from 'viem';
-import { baseSepolia } from 'wagmi/chains';
+import { mantleSepoliaTestnet } from 'wagmi/chains';
 import { goBuzzAbi } from '@/abis/goBuzzAbi';
 
 export interface CampaignInfo {
@@ -21,20 +21,20 @@ export function useCampaignInfo(campaignAddress?: Address) {
     address: campaignAddress,
     abi: goBuzzAbi,
     functionName: 'getCampaignInfo',
-    chainId: baseSepolia.id,
+    chainId: mantleSepoliaTestnet.id,
   });
 
   const campaignInfo = data
     ? {
-        name: data[0],
-        start: data[1],
-        end: data[2],
-        totalPool: data[3],
-        claimed: data[4],
-        remaining: data[5],
-        rewardAmount: data[6],
-        isActive: data[7],
-      }
+      name: data[0],
+      start: data[1],
+      end: data[2],
+      totalPool: data[3],
+      claimed: data[4],
+      remaining: data[5],
+      rewardAmount: data[6],
+      isActive: data[7],
+    }
     : undefined;
 
   return {

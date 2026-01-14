@@ -12,8 +12,7 @@ import ValidationModal from '@/components/campaign/ValidationModal';
 import { Address, formatUnits } from 'viem';
 import { goBuzzAbi } from '@/abis/goBuzzAbi';
 
-// Optional backend base URL. Set NEXT_PUBLIC_API_BASE_URL in .env.local if backend runs on a different port,
-// e.g. NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
+
 const API_BASE = typeof process !== 'undefined' ? (process.env.NEXT_PUBLIC_API_BASE_URL as string) || '' : '';
 
 interface CampaignRule {
@@ -38,13 +37,13 @@ export default function CampaignDetailPage() {
   const router = useRouter();
   const campaignId = parseInt(params.id as string);
   const { isConnected, address } = useAccount();
-  
+
   // Claim reward hooks
   const { writeContract, isPending: isWritePending, data: claimTxHash } = useWriteContract();
   const { isLoading: isClaimConfirming, isSuccess: isClaimSuccess } = useWaitForTransactionReceipt({
     hash: claimTxHash,
   });
-  
+
   const [isJoining, setIsJoining] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
@@ -128,7 +127,7 @@ export default function CampaignDetailPage() {
     const checkCompletedTasks = async () => {
       const completed = new Set<string>();
       const storageKey = `completed-tasks-${campaignId}-${address}`;
-      
+
       // First check localStorage for quick access
       try {
         const stored = localStorage.getItem(storageKey);
@@ -140,7 +139,7 @@ export default function CampaignDetailPage() {
       } catch (err) {
         console.warn('Error loading from localStorage:', err);
       }
-      
+
       // Then try to check database (optional, with error tolerance)
       for (const rule of campaignData.rules) {
         try {
@@ -158,7 +157,7 @@ export default function CampaignDetailPage() {
           // Silently fail - don't block UI
         }
       }
-      
+
       setCompletedTasks(completed);
     };
 
@@ -207,10 +206,10 @@ export default function CampaignDetailPage() {
   // Helper: Check if all required tasks are completed
   const areAllRequiredTasksCompleted = () => {
     if (!campaignData || !campaignData.rules) return false;
-    
+
     const requiredRules = campaignData.rules.filter(rule => rule.isRequired);
     if (requiredRules.length === 0) return false;
-    
+
     return requiredRules.every(rule => completedTasks.has(rule.id));
   };
 
@@ -264,7 +263,7 @@ export default function CampaignDetailPage() {
         message: '🎉 Reward claimed successfully!',
         details: { tweetId: '', author: '' },
       });
-      
+
       console.log('[CLAIM] Reward claimed successfully');
     }
   }, [isClaimSuccess, isClaimConfirming]);
@@ -303,7 +302,7 @@ export default function CampaignDetailPage() {
     try {
       // Direct verification - user submit link, backend verify automatically (no Reclaim popup)
       const verifyEndpoint = API_BASE ? `${API_BASE}/api/verify-comment-direct` : `/api/verify-comment-direct`;
-      
+
       console.log('Submitting validation link to:', verifyEndpoint);
 
       const verifyResp = await fetch(verifyEndpoint, {
@@ -353,7 +352,7 @@ export default function CampaignDetailPage() {
             localStorage.setItem(storageKey, JSON.stringify(completedTasksList));
             console.log('[COMPLETED-TASKS] Saved to localStorage:', completedTasksList);
           }
-          
+
           // Update UI state immediately
           const newCompleted = new Set<string>(completedTasksList as string[]);
           setCompletedTasks(newCompleted);
@@ -369,8 +368,8 @@ export default function CampaignDetailPage() {
               campaignId,
               userAddress: address,
               ruleId: activeValidationRuleId,
-              ruleType: activeValidationRuleId 
-                ? campaignData?.rules.find(r => r.id === activeValidationRuleId)?.ruleType 
+              ruleType: activeValidationRuleId
+                ? campaignData?.rules.find(r => r.id === activeValidationRuleId)?.ruleType
                 : 'UNKNOWN',
               verificationData: {
                 tweetId: tweetId || '',
@@ -437,7 +436,7 @@ export default function CampaignDetailPage() {
     try {
       // Direct verification - auto-verify follow without popup
       const verifyEndpoint = API_BASE ? `${API_BASE}/api/verify-follow-direct` : `/api/verify-follow-direct`;
-      
+
       console.log('[FOLLOW-VERIFY] Verifying follow for:', twitterHandle);
 
       const verifyResp = await fetch(verifyEndpoint, {
@@ -565,7 +564,7 @@ export default function CampaignDetailPage() {
     try {
       // Call backend to check followers count
       const verifyEndpoint = API_BASE ? `${API_BASE}/api/verify-followers` : `/api/verify-followers`;
-      
+
       console.log('[FOLLOWERS-VERIFY] Verifying followers count. Required:', minFollowers);
 
       const verifyResp = await fetch(verifyEndpoint, {
@@ -1045,13 +1044,12 @@ export default function CampaignDetailPage() {
                                       <button
                                         onClick={() => handleOpenValidation(rule.id)}
                                         disabled={completedTasks.has(rule.id)}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                                          completedTasks.has(rule.id)
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${completedTasks.has(rule.id)
                                             ? 'bg-green-500/20 border-green-500 text-green-400 cursor-not-allowed'
                                             : isValidationActive
-                                            ? 'bg-[#3AE8FF]/20 border-[#3AE8FF] text-[#3AE8FF]'
-                                            : 'bg-transparent border-[#2A3441] text-[#B8C2CC] hover:border-[#3AE8FF] hover:text-white'
-                                        }`}
+                                              ? 'bg-[#3AE8FF]/20 border-[#3AE8FF] text-[#3AE8FF]'
+                                              : 'bg-transparent border-[#2A3441] text-[#B8C2CC] hover:border-[#3AE8FF] hover:text-white'
+                                          }`}
                                       >
                                         {completedTasks.has(rule.id) ? '✓ Completed' : isValidationActive ? 'Cancel Verification' : 'Verify Task'}
                                       </button>
@@ -1065,19 +1063,18 @@ export default function CampaignDetailPage() {
                                           handleVerifyFollow(rule.id, handle);
                                         }}
                                         disabled={completedTasks.has(rule.id) || isVerifyingFollow}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                                          completedTasks.has(rule.id)
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${completedTasks.has(rule.id)
                                             ? 'bg-green-500/20 border-green-500 text-green-400 cursor-not-allowed'
                                             : isVerifyingFollow && activeFollowRuleId === rule.id
-                                            ? 'bg-[#3AE8FF]/20 border-[#3AE8FF] text-[#3AE8FF]'
-                                            : 'bg-transparent border-[#2A3441] text-[#B8C2CC] hover:border-[#3AE8FF] hover:text-white'
-                                        }`}
+                                              ? 'bg-[#3AE8FF]/20 border-[#3AE8FF] text-[#3AE8FF]'
+                                              : 'bg-transparent border-[#2A3441] text-[#B8C2CC] hover:border-[#3AE8FF] hover:text-white'
+                                          }`}
                                       >
-                                        {completedTasks.has(rule.id) 
-                                          ? '✓ Completed' 
+                                        {completedTasks.has(rule.id)
+                                          ? '✓ Completed'
                                           : isVerifyingFollow && activeFollowRuleId === rule.id
-                                          ? 'Verifying...'
-                                          : 'Verify Follow'
+                                            ? 'Verifying...'
+                                            : 'Verify Follow'
                                         }
                                       </button>
                                     )}
@@ -1087,19 +1084,18 @@ export default function CampaignDetailPage() {
                                       <button
                                         onClick={() => handleVerifyFollowers(rule.id, rule.ruleValue)}
                                         disabled={completedTasks.has(rule.id) || isVerifyingFollowers}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                                          completedTasks.has(rule.id)
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${completedTasks.has(rule.id)
                                             ? 'bg-green-500/20 border-green-500 text-green-400 cursor-not-allowed'
                                             : isVerifyingFollowers && activeFollowersRuleId === rule.id
-                                            ? 'bg-[#3AE8FF]/20 border-[#3AE8FF] text-[#3AE8FF]'
-                                            : 'bg-transparent border-[#2A3441] text-[#B8C2CC] hover:border-[#3AE8FF] hover:text-white'
-                                        }`}
+                                              ? 'bg-[#3AE8FF]/20 border-[#3AE8FF] text-[#3AE8FF]'
+                                              : 'bg-transparent border-[#2A3441] text-[#B8C2CC] hover:border-[#3AE8FF] hover:text-white'
+                                          }`}
                                       >
-                                        {completedTasks.has(rule.id) 
-                                          ? '✓ Completed' 
+                                        {completedTasks.has(rule.id)
+                                          ? '✓ Completed'
                                           : isVerifyingFollowers && activeFollowersRuleId === rule.id
-                                          ? 'Checking...'
-                                          : 'Verify Followers'
+                                            ? 'Checking...'
+                                            : 'Verify Followers'
                                         }
                                       </button>
                                     )}
@@ -1190,13 +1186,12 @@ export default function CampaignDetailPage() {
                     <button
                       onClick={handleClaimReward}
                       disabled={isClaimingReward || !areAllRequiredTasksCompleted() || hasClaimedReward}
-                      className={`px-6 py-3 rounded-lg font-bold transition-all ${
-                        hasClaimedReward
+                      className={`px-6 py-3 rounded-lg font-bold transition-all ${hasClaimedReward
                           ? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-60'
                           : areAllRequiredTasksCompleted()
-                          ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg shadow-green-500/50'
-                          : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
-                      }`}
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg shadow-green-500/50'
+                            : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+                        }`}
                     >
                       {hasClaimedReward ? '✅ Already Claimed' : isClaimingReward ? 'Claiming...' : '💰 Claim Reward'}
                     </button>

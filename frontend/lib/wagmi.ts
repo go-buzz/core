@@ -1,9 +1,9 @@
 import { http, createConfig } from 'wagmi'
-import { mainnet, sepolia, polygon, arbitrum, optimism, base, baseSepolia } from 'wagmi/chains'
+import { mantleSepoliaTestnet } from 'wagmi/chains'
 import { walletConnect, injected } from 'wagmi/connectors'
 
 export const config = createConfig({
-  chains: [baseSepolia, mainnet, sepolia, polygon, arbitrum, optimism, base],
+  chains: [mantleSepoliaTestnet],
   connectors: [
     walletConnect({
       projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
@@ -18,12 +18,6 @@ export const config = createConfig({
     injected(),
   ],
   transports: {
-    [baseSepolia.id]: http('https://sepolia.base.org'),
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
-    [polygon.id]: http(),
-    [arbitrum.id]: http(),
-    [optimism.id]: http(),
-    [base.id]: http(),
+    [mantleSepoliaTestnet.id]: http('https://rpc.sepolia.mantle.xyz'),
   },
 })

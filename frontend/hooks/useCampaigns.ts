@@ -2,7 +2,7 @@
 
 import { useReadContract } from 'wagmi';
 import { Address } from 'viem';
-import { baseSepolia } from 'wagmi/chains';
+import { mantleSepoliaTestnet } from 'wagmi/chains';
 import { goBuzzFactoryAbi } from '@/abis/goBuzzFactoryAbi';
 
 const FACTORY_ADDRESS = process.env.NEXT_PUBLIC_FACTORY_ADDRESS as Address;
@@ -13,7 +13,7 @@ export function useCampaigns() {
     address: FACTORY_ADDRESS,
     abi: goBuzzFactoryAbi,
     functionName: 'getCampaigns',
-    chainId: baseSepolia.id,
+    chainId: mantleSepoliaTestnet.id,
   });
 
   // Get campaign count
@@ -21,7 +21,7 @@ export function useCampaigns() {
     address: FACTORY_ADDRESS,
     abi: goBuzzFactoryAbi,
     functionName: 'getCampaignCount',
-    chainId: baseSepolia.id,
+    chainId: mantleSepoliaTestnet.id,
   });
 
   return {
@@ -38,7 +38,7 @@ export function useUserCampaigns(userAddress?: Address) {
     abi: goBuzzFactoryAbi,
     functionName: 'getUserCampaigns',
     args: userAddress ? [userAddress] : undefined,
-    chainId: baseSepolia.id,
+    chainId: mantleSepoliaTestnet.id,
   });
 
   return {
